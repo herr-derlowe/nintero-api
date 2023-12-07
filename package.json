@@ -1,0 +1,15 @@
+{
+  "name": "nintero-api",
+  "version": "1.0.0",
+  "description": "Steam store front api ripoff.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Skyler de Leon & Balaguer Rivera",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
