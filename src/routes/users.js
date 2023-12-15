@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const { tokenAuthentication, checkTipo } = require('../middleware/jwt-auth');
 
 // Main user route '/api/users/'. Currently expects JWT of user type 0 or 1
-router.get('/', tokenAuthentication, checkTipo([0, 1]), (req, res, next) => {
+router.get('/getall', tokenAuthentication, checkTipo([0]), (req, res, next) => {
     userService.findAllUsers().then((documents) => {
         return res.status(200).json(documents);
     })
@@ -19,11 +19,32 @@ router.get('/', tokenAuthentication, checkTipo([0, 1]), (req, res, next) => {
     });
 });
 
-// User route '/api/users/:userid'. Currently expects a valid userid and a JWT of user type 0 or 1
-router.get('/:userid', tokenAuthentication, checkTipo([0, 1]), (req, res, next) => {
+// User route '/api/users/getid/:userid'. Currently expects a valid userid and a JWT of user type 0 or 1
+router.get('/getid/:userid', tokenAuthentication, checkTipo([0]), (req, res, next) => {
     const userid = req.params.userid;
 
-    userService.findUser(userid).then((document) => {
+    userService.findUserById(userid).then((document) => {
+        if (document) {
+            return res.status(200).json(document);
+        } else {
+            return res.status(404).json({
+                message: "That user does not exist"
+            });
+        }
+    })
+    .catch(error => {
+        console.log(error);
+        return res.status(500).json({
+            message: 'Could not get that user',
+            error: error
+        });
+    });
+});
+
+router.get('/getusername/:username', tokenAuthentication, checkTipo([0]), (req, res, next) => {
+    const username = req.params.username;
+
+    userService.findUserByUsername(username).then((document) => {
         if (document) {
             return res.status(200).json(document);
         } else {
@@ -48,7 +69,7 @@ router.post('/register', async (req, res, next) => {
         apellido: req.body.apellido,
         username: req.body.username,
         email: req.body.email,
-        profileURL: req.body.profileURL,
+        profileURL: req.body.profileURL ? req.body.profileURL : `https://ui-avatars.com/api/?name=${req.body.username}&size=128`,
         password: req.body.password,
         confirmPassword: req.body.confirmPassword,
     }
@@ -75,8 +96,7 @@ router.post('/register', async (req, res, next) => {
             console.log(insert_result);
             if (insert_result) {
                 return res.status(201).json({
-                    message: 'New user created',
-                    user: insert_result
+                    message: 'New user created'
                 });
             } else {
                 return res.status(422).json({
@@ -134,7 +154,8 @@ router.post('/login', async (req, res, next) => {
 
                 return res.status(200).json({
                     message: 'Authentication successful',
-                    token: token
+                    token: token,
+                    user: find_user_email
                 });
             } else {
                 return res.status(401).json({

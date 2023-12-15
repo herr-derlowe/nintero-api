@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { findUser } = require('../services/userService');
+const { findUserById } = require('../services/userService');
 
 /**
  * @description Authenticates JWT inside of "Authorization" header
@@ -38,7 +38,7 @@ const tokenAuthentication = (req, res, next) => {
  */
 const checkTipo = (tipos) => async (req, res, next) => {
     // userd from req.tokenData.userid present in token singing
-    const user = await findUser(req.tokenData.userid);
+    const user = await findUserById(req.tokenData.userid);
     if (!tipos.includes(user.tipo)) {
         return res.status(401).json({
             message: "Route unauthorized"

@@ -7,7 +7,7 @@ let registerSchema = yup.object({
     apellido: yup.string().required(),
     username: yup.string().required(),
     email: yup.string().email().required(),
-    profileURL: yup.string().url().required(),
+    profileURL: yup.string().url(),
     password: yup.string().matches(PASSWORD_REGEX, 'Password must contain uppercase and lowercase letters, a number and a special character. Plus be at least 8 characters long').required(),
     confirmPassword: yup.string().oneOf([yup.ref('password'), null], "Password do not match")
 }).required();

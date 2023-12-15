@@ -35,7 +35,7 @@ async function findAllUsers() {
 /**
  * @description DB single user service. Expects user ObjectId and returns promise containing user document
 */
-async function findUser(userid) {
+async function findUserById(userid) {
     return await User.findById(userid).exec();
 }
 
@@ -72,6 +72,16 @@ async function findByEmail(email) {
 }
 
 /**
+ * @description DB user by username service. Expects username and returns promise containing user document
+*/
+async function findUserByUsername(username) {
+    let query = {username: username};
+    const result = await User.findOne(query).exec();
+    
+    return result;
+}
+
+/**
  * @description User password hashing service. Expects user password and returns promise containing hashed password
 */
 async function hashpassword(password) {
@@ -87,9 +97,10 @@ async function validatePassword(password, user){
 
 module.exports = {
     findAllUsers,
-    findUser,
+    findUserById,
     findUsernameEmail,
     findByEmail,
+    findUserByUsername,
     validatePassword,
     createUser
 }
