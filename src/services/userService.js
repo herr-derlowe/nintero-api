@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const User = require('../models/userModel');
+const mongo = require('mongodb');
 
 /**
  * @description DB user register service, expects user main data from '/api/users/register' route
@@ -82,6 +83,63 @@ async function findUserByUsername(username) {
 }
 
 /**
+ * @description DB users by id array service. Expects array of user ids and returns promise containing array of documents
+*/
+async function findUsersByIdArray(id_array){
+    let search_query = { $in: id_array};
+    return await User.find({ _id: search_query });
+}
+
+/**
+ * @description DB user update service, expects valid user id and user fields to update. Returns new updated document
+*/
+async function updateUserBySelf(userid, update_data) {
+    update_data.fechaEdicion = new Date();
+    let update_query = { $set: update_data};
+    return await User.findOneAndUpdate({ _id: userid }, update_query, { new: true });
+}
+
+/**
+ * @description DB user delete by id service, expects valid user id. Returns count of deleted documents as deletedCount inside an object
+*/
+async function deleteUserById(userid) {
+    return await User.deleteOne({ _id: userid });
+}
+
+async function updateUserFunds(userid, amount){
+    let query = { $inc: { billetera:  mongo.Decimal128.fromString(amount.toString())}};
+    return await User.findOneAndUpdate({ _id: userid }, query, { new: true }); 
+}
+
+async function checkUserFunds(userid) {
+    return await User.findById(userid, 'billetera');
+}
+
+/**
+ * @description DB user register admin service, expects user main data from '/api/users/admin/register' route
+*/
+async function createUserAdmin(userbody) {
+    const userdoc = new User({
+        nombre: userbody.nombre,
+        apellido: userbody.apellido,
+        username: userbody.username,
+        email: userbody.email,
+        profileURL: userbody.profileURL,
+        password: await hashpassword(userbody.password),
+        // tipos de usuario. 0 admin, 1 developer, 2 normal
+        tipo: userbody.tipo,
+        billetera: userbody.billetera,
+        fechaCreacion: new Date(),
+        fechaEdicion: new Date(),
+        blocked: userbody.blocked,
+        wishlist: [],
+        libreria: []
+    });
+
+    return await userdoc.save();
+}
+
+/**
  * @description User password hashing service. Expects user password and returns promise containing hashed password
 */
 async function hashpassword(password) {
@@ -102,5 +160,11 @@ module.exports = {
     findByEmail,
     findUserByUsername,
     validatePassword,
-    createUser
+    createUser,
+    updateUserBySelf,
+    findUsersByIdArray,
+    deleteUserById,
+    updateUserFunds,
+    checkUserFunds,
+    createUserAdmin
 }

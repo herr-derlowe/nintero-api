@@ -4,8 +4,9 @@ const userSchema = require('../validators/userschemas');
 const userService = require('../services/userService');
 const jwt = require('jsonwebtoken');
 const { tokenAuthentication, checkTipo } = require('../middleware/jwt-auth');
+const { parse } = require('dotenv');
 
-// Main user route '/api/users/'. Currently expects JWT of user type 0 or 1
+// Main user route '/api/users/'. Currently expects JWT of user type 0
 router.get('/getall', tokenAuthentication, checkTipo([0]), (req, res, next) => {
     userService.findAllUsers().then((documents) => {
         return res.status(200).json(documents);
@@ -19,7 +20,7 @@ router.get('/getall', tokenAuthentication, checkTipo([0]), (req, res, next) => {
     });
 });
 
-// User route '/api/users/getid/:userid'. Currently expects a valid userid and a JWT of user type 0 or 1
+// User route '/api/users/getid/:userid'. Currently expects a valid userid and a JWT of user type 0
 router.get('/getid/:userid', tokenAuthentication, checkTipo([0]), (req, res, next) => {
     const userid = req.params.userid;
 
@@ -41,6 +42,7 @@ router.get('/getid/:userid', tokenAuthentication, checkTipo([0]), (req, res, nex
     });
 });
 
+// User route '/api/getusername/:username'. Currently expects a valid username and a JWT of user type 0
 router.get('/getusername/:username', tokenAuthentication, checkTipo([0]), (req, res, next) => {
     const username = req.params.username;
 
@@ -81,7 +83,7 @@ router.post('/register', async (req, res, next) => {
         console.log(e.errors);
         if (e.errors !== undefined) {
             return res.status(422).json({
-                errors: e.errors
+                error: e.errors
             });
         }
     }
@@ -108,7 +110,7 @@ router.post('/register', async (req, res, next) => {
         console.log(error);
         return res.status(500).json({
             message: 'Could not create the user',
-            error: error
+            error: error.message
         });
     }
 });
@@ -127,7 +129,7 @@ router.post('/login', async (req, res, next) => {
         console.log(e.errors);
         if (e.errors !== undefined) {
             return res.status(422).json({
-                errors: e.errors
+                error: e.errors
             });
         }
     }
@@ -174,7 +176,335 @@ router.post('/login', async (req, res, next) => {
         console.log(error);
         return res.status(500).json({
             message: 'Could not login user',
-            error: error
+            error: error.message
+        });
+    }
+});
+
+// User update route '/api/users/update'. Expects valid JWT and any user field to update as per 'editUserSchema' in './validors'
+// Updates the same user that sent the request
+router.put('/update', tokenAuthentication, checkTipo([0, 1, 2]), async (req, res, next) => {
+    try {
+        //console.log(req.body);
+        userSchema.editUserSchema.validateSync(req.body, {abortEarly: false});
+    } catch (e) {
+        console.log(e.errors);
+        if (e.errors !== undefined) {
+            return res.status(422).json({
+                error: e.errors
+            });
+        }
+    }
+
+    try {
+        const find_username_email_result = await userService.findUsernameEmail(req.body.username, req.body.email);
+        if (find_username_email_result.found) {
+            return res.status(409).json(find_username_email_result);
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: 'Could not verify user or email existence',
+            error: error.message
+        }); 
+    }
+
+    try {
+        userService.updateUserBySelf(req.tokenData.userid, req.body).then((updated_document) => {
+            if (!updated_document) {
+                return res.status(400).json({
+                    message: "User update empty"
+                });
+            } else {
+                return res.status(200).json({
+                    message: "User updated successfully",
+                    user: updated_document
+                });
+            }
+        })
+        .catch((error) => {
+            console.log(error);
+            return res.status(400).json({
+                message: "User update failed",
+                error: error
+            });
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: 'Could not edit user',
+            error: error.message
+        });
+    }
+});
+
+// User update through route '/api/users/admin/update'. Expects valid JWT of type 0 and any user field to update as per 'editUserAdminSchema' in './validors'
+// Updates the given user as per the required 'userid' field in 'editUserAdminSchema' in '../validators/userschemas.js'
+router.put('/admin/update', tokenAuthentication, checkTipo([0]), async (req, res, next) => {
+    try {
+        //console.log(req.body);
+        userSchema.editUserAdminSchema.validateSync(req.body, {abortEarly: false});
+    } catch (e) {
+        console.log(e.errors);
+        if (e.errors !== undefined) {
+            return res.status(422).json({
+                error: e.errors
+            });
+        }
+    }
+
+    try {
+        // NOTA: CAMBIAR VERIFICACION A JUEGOS REGISTRADOS
+        if ('wishlist' in req.body) {
+            const users_wishlist_found = await userService.findUsersByIdArray(req.body.wishlist);
+            if (users_wishlist_found.length != req.body.wishlist.length) {
+                return res.status(400).json({
+                    message: "One or more users in 'wishlist' do not match the database. Make sure they exist and are not repeated"
+                }); 
+            }
+        }
+
+        if ('libreria' in req.body) {
+            const users_libreria_found = await userService.findUsersByIdArray(req.body.libreria);
+            if (users_libreria_found.length != req.body.libreria.length) {
+                return res.status(400).json({
+                    message: "One or more users in 'libreria' do not match the database. Make sure they exist and are not repeated"
+                }); 
+            }
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: "Could not verify 'wishlist' and/or 'libreria' integrity",
+            error: error.message
+        }); 
+    }
+
+    try {
+        // NOTA: CAMBIAR VERIFICACION A JUEGOS REGISTRADOS
+        if ('billetera' in req.body) {
+            req.body.billetera = parseFloat(req.body.billetera);
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: "Could not convert field 'billetera' to float",
+            error: error.message
+        }); 
+    }
+
+    try {
+        const find_username_email_result = await userService.findUsernameEmail(req.body.username, req.body.email);
+        if (find_username_email_result.found) {
+            return res.status(409).json(find_username_email_result);
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: 'Could not verify user or email existence',
+            error: error.message
+        }); 
+    }
+
+    try {
+        const userid = req.body.userid;
+        delete req.body.userid;
+        userService.updateUserBySelf(userid, req.body).then((updated_document) => {
+            if (!updated_document) {
+                return res.status(400).json({
+                    message: "User update empty"
+                });
+            } else {
+                return res.status(200).json({
+                    message: "User updated successfully",
+                    user: updated_document
+                });
+            }
+        })
+        .catch((error) => {
+            console.log(error);
+            return res.status(400).json({
+                message: "User update failed",
+                error: error
+            });
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: 'Could not edit user',
+            error: error.message
+        });
+    }
+});
+
+// User self delete through route '/api/users/delete'. Expects valid JWT
+// Deletes the same user that sent the request
+router.delete('/delete', tokenAuthentication, checkTipo([0, 1, 2]), async (req, res, next) => {
+    try {
+        const deleted_count = await userService.deleteUserById(req.tokenData.userid);
+        if (deleted_count.deletedCount !== 1) {
+            return res.status(400).json({
+                message: 'Could not delete user by provided id'
+            });
+        } else {
+            return res.status(200).json({
+                message: 'User deleted',
+                deletedCount: deleted_count.deletedCount
+            });
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: 'Could not delete user',
+            error: error.message
+        });
+    }
+});
+
+// User delete by admin through route '/api/users/admin/delete/:userid'. Expects valid JWT of type 0 and URL parameter 'userid', which should be a valid user id to delete
+// Deletes the given user specified by the appended user id
+router.delete('/admin/delete/:userid', tokenAuthentication, checkTipo([0]), async (req, res, next) => {
+    try {
+        const deleted_count = await userService.deleteUserById(req.params.userid);
+        if (deleted_count.deletedCount !== 1) {
+            return res.status(400).json({
+                message: 'Could not delete user by provided id'
+            });
+        } else {
+            return res.status(200).json({
+                message: 'User deleted',
+                deletedCount: deleted_count.deletedCount
+            });
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: 'Could not delete user',
+            error: error.message
+        });
+    }
+});
+
+// User funds update through route '/api/users/funds'. Expects valid JWT, 'mode' of update and 'amount' to update as per 'userBillingSchema' in '../validators/userschemas.js'
+// Increments ('mode': 'INC') or decreases ('mode': 'DEC') the funds of the user that sent the request by 'amount'
+router.put('/funds', tokenAuthentication, checkTipo([0, 1, 2]), async (req, res, next) => {
+    try {
+        //console.log(req.body);
+        userSchema.userBillingSchema.validateSync(req.body, {abortEarly: false});
+    } catch (e) {
+        console.log(e.errors);
+        if (e.errors !== undefined) {
+            return res.status(422).json({
+                error: e.errors
+            });
+        }
+    }
+
+    let amount = 0;
+    try {
+        amount = parseFloat(req.body.amount);
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: 'Could not assign amount decimals',
+            error: error.message
+        });
+    }
+
+    switch (req.body.mode) {
+        case 'INC':
+            amount *= 1;
+            break;
+        case 'DEC':
+            try {
+                const user_funds = await userService.checkUserFunds(req.tokenData.userid);
+                if (amount > user_funds.billetera) {
+                    return res.status(409).json({
+                        message: "Unable to process transaction. Deducted amount is greater than account funds"
+                    });
+                }
+            } catch (error) {
+                console.log(error);
+                return res.status(500).json({
+                    message: 'Could not check user funds for DEC',
+                    error: error.message
+                });
+            }
+            amount *= -1;
+            break;
+    }
+
+    try {
+        const updated_user = await userService.updateUserFunds(req.tokenData.userid, amount);
+        if (!updated_user) {
+            return res.status(400).json({
+                message: "User update empty"
+            });
+        } else {
+            return res.status(200).json({
+                message: "User funds updated successfully",
+                user: updated_user
+            });
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: 'Could not update user funds',
+            error: error.message
+        });
+    }
+});
+
+// User register by admin route '/api/users/admin/register'. Expects valid JWT of type 0 and main user data. See body for details
+router.post('/admin/register', tokenAuthentication, checkTipo([0]), async (req, res, next) => {
+    try {
+        //console.log(req.body);
+        userSchema.registerUserAdminSchema.validateSync(req.body, {abortEarly: false});
+    } catch (e) {
+        console.log(e.errors);
+        if (e.errors !== undefined) {
+            return res.status(422).json({
+                error: e.errors
+            });
+        }
+    }
+
+    try {
+        const user = {
+            nombre: req.body.nombre,
+            apellido: req.body.apellido,
+            username: req.body.username,
+            email: req.body.email,
+            profileURL: req.body.profileURL ? req.body.profileURL : `https://ui-avatars.com/api/?name=${req.body.username}&size=128`,
+            password: req.body.password,
+            tipo: req.body.tipo,
+            billetera: parseFloat(req.body.billetera),
+            blocked: req.body.blocked
+        }
+
+        const find_username_email_result = await userService.findUsernameEmail(user.username, user.email);
+        if (find_username_email_result.found) {
+            return res.status(422).json(find_username_email_result);
+        }
+        
+        userService.createUserAdmin(user).then((insert_result) =>{
+            console.log(insert_result);
+            if (insert_result) {
+                return res.status(201).json({
+                    message: 'New user created through admin',
+                    user: insert_result
+                });
+            } else {
+                return res.status(422).json({
+                    message: 'Could not create the user through admin'
+                });
+            }
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: 'Could not create the user through admin',
+            error: error.message
         });
     }
 });

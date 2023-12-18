@@ -28,8 +28,8 @@ const tokenAuthentication = (req, res, next) => {
     } catch (error) {
         return res.status(500).json({
             message: 'Token auhtentication failed',
-            error: error
-        })
+            error: error.message
+        });
     }    
 }
 
@@ -38,13 +38,20 @@ const tokenAuthentication = (req, res, next) => {
  */
 const checkTipo = (tipos) => async (req, res, next) => {
     // userd from req.tokenData.userid present in token singing
-    const user = await findUserById(req.tokenData.userid);
-    if (!tipos.includes(user.tipo)) {
-        return res.status(401).json({
-            message: "Route unauthorized"
+    try {
+        const user = await findUserById(req.tokenData.userid);
+        if (!tipos.includes(user.tipo)) {
+            return res.status(401).json({
+                message: "Route unauthorized"
+            });
+        } else {
+            next();
+        }
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Could not verify user type',
+            error: error.message
         });
-    } else {
-        next();
     }
 };
 
