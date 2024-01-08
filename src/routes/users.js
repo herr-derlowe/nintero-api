@@ -4,7 +4,6 @@ const userSchema = require('../validators/userschemas');
 const userService = require('../services/userService');
 const jwt = require('jsonwebtoken');
 const { tokenAuthentication, checkTipo } = require('../middleware/jwt-auth');
-const { parse } = require('dotenv');
 
 // Main user route '/api/users/'. Currently expects JWT of user type 0
 router.get('/getall', tokenAuthentication, checkTipo([0]), (req, res, next) => {
@@ -115,7 +114,7 @@ router.post('/register', async (req, res, next) => {
     }
 });
 
-// User register route '/api/users/login'. Expects user email and password
+// User login route '/api/users/login'. Expects user email and password
 router.post('/login', async (req, res, next) => {
     const login_data = {
         email: req.body.email,
@@ -199,7 +198,18 @@ router.put('/update', tokenAuthentication, checkTipo([0, 1, 2]), async (req, res
     try {
         const find_username_email_result = await userService.findUsernameEmail(req.body.username, req.body.email);
         if (find_username_email_result.found) {
-            return res.status(409).json(find_username_email_result);
+            delete find_username_email_result.found
+            let msg = ""
+            for (const key in find_username_email_result) {
+                if (key == "result_username" && find_username_email_result.hasOwnProperty("result_email")) {
+                    msg = msg + find_username_email_result[key] + "\n";
+                    continue;
+                }
+                msg = msg + find_username_email_result[key];
+            }
+            return res.status(409).json({
+                message: msg
+            });
         }
     } catch (error) {
         console.log(error);
@@ -504,6 +514,69 @@ router.post('/admin/register', tokenAuthentication, checkTipo([0]), async (req, 
         console.log(error);
         return res.status(500).json({
             message: 'Could not create the user through admin',
+            error: error.message
+        });
+    }
+});
+
+// User password change route '/api/users/password'. Expects valid JWT of any type, old password, new password and confirmed password
+// Changes password of self
+router.put('/password', tokenAuthentication, checkTipo([0, 1, 2]), async (req, res, next) => {
+    try {
+        //console.log(req.body);
+        userSchema.passwordUpdateSchema.validateSync(req.body, {abortEarly: false});
+    } catch (e) {
+        console.log(e.errors);
+        if (e.errors !== undefined) {
+            return res.status(422).json({
+                error: e.errors
+            });
+        }
+    }
+
+    try {
+        const find_user_email = await userService.findByEmail(req.tokenData.email);
+        if (!find_user_email) {
+            return res.status(401).json({
+                message: "Authentication failed",
+            });
+        }
+
+        userService.validatePassword(req.body.oldPassword, find_user_email).then((passwordMatch) => {
+            if (passwordMatch) {
+                userService.hashpassword(req.body.newPassword).then((hash_new_password) => {
+                    userService.updateUserBySelf(req.tokenData.userid, {
+                        password: hash_new_password
+                    }).then((new_user) => {
+                        if (!new_user) {
+                            return res.status(400).json({
+                                message: "User password update empty"
+                            });
+                        } else {
+                            return res.status(200).json({
+                                message: "User password updated successfully",
+                                user: new_user
+                            });
+                        }
+                    });
+                });
+            } else {
+                return res.status(401).json({
+                    message: 'Wrong old password'
+                });
+            }
+        })
+        .catch((error) => {
+            return res.status(400).json({
+                message: 'Authentication error',
+                error: error.message
+            });
+        })
+        
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: 'Could not change user password',
             error: error.message
         });
     }

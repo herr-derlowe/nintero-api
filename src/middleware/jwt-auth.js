@@ -30,7 +30,7 @@ const tokenAuthentication = (req, res, next) => {
             message: 'Token auhtentication failed',
             error: error.message
         });
-    }    
+    }
 }
 
 /**

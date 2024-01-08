@@ -159,6 +159,7 @@ module.exports = {
     findUsernameEmail,
     findByEmail,
     findUserByUsername,
+    hashpassword,
     validatePassword,
     createUser,
     updateUserBySelf,

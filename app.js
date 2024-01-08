@@ -8,6 +8,7 @@ require('dotenv').config();
 
 // setting up api routes variables
 const userRoutes = require('./src/routes/users');
+const validatorRoutes = require('./src/routes/validators')
 
 mongoose.connect(process.env.MONGODB_URI, { dbName: 'ninterodb' });
 
@@ -31,6 +32,7 @@ app.use((req, res, next) => {
 
 // API routes
 app.use('/api/users/', userRoutes);
+app.use('/api/validators/', validatorRoutes);
 
 // Handle all routes not defined
 app.use((req, res, next) => {

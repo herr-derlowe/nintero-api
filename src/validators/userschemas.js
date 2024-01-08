@@ -11,7 +11,7 @@ let registerSchema = yup.object({
     email: yup.string().email().required(),
     profileURL: yup.string().url('Not a valid profile URL'),
     password: yup.string().matches(PASSWORD_REGEX, 'Password must contain uppercase and lowercase letters, a number and a special character. Plus be at least 8 characters long').required(),
-    confirmPassword: yup.string().oneOf([yup.ref('password'), null], "Password do not match").required()
+    confirmPassword: yup.string().oneOf([yup.ref('password'), null], "Passwords do not match").required()
 }).required();
 
 let registerUserAdminSchema = yup.object({
@@ -21,7 +21,7 @@ let registerUserAdminSchema = yup.object({
     email: yup.string().email().required(),
     profileURL: yup.string().url('Not a valid profile URL'),
     password: yup.string().matches(PASSWORD_REGEX, 'Password must contain uppercase and lowercase letters, a number and a special character. Plus be at least 8 characters long').required(),
-    confirmPassword: yup.string().oneOf([yup.ref('password'), null], "Password do not match").required(),
+    confirmPassword: yup.string().oneOf([yup.ref('password'), null], "Passwords do not match").required(),
     // tipos de usuario. 0 admin, 1 developer, 2 normal
     tipo: yup.number().min(0).max(2).required(),
     billetera: yup.number().positive().required(),
@@ -53,7 +53,7 @@ let editUserAdminSchema = yup.object({
     username: yup.string(),
     email: yup.string().email('Not a valid email'),
     profileURL: yup.string().url('Not a valid profile URL'),
-    password: yup.string(),
+    password: yup.string().matches(PASSWORD_REGEX, 'Password must contain uppercase and lowercase letters, a number and a special character. Plus be at least 8 characters long').required(),
     // tipos de usuario. 0 admin, 1 developer, 2 normal
     tipo: yup.number().min(0).max(2),
     billetera: yup.number().positive(),
@@ -80,11 +80,18 @@ let userBillingSchema = yup.object({
     amount: yup.number().positive().required()
 }).required();
 
+let passwordUpdateSchema = yup.object({
+    oldPassword: yup.string().required(),
+    newPassword: yup.string().matches(PASSWORD_REGEX, 'Password must contain uppercase and lowercase letters, a number and a special character. Plus be at least 8 characters long').required(),
+    confirmPassword: yup.string().oneOf([yup.ref('newPassword'), null], "Passwords do not match").required()
+}).required();
+
 module.exports = {
     registerSchema,
     registerUserAdminSchema,
     loginSchema,
     editUserSchema,
     editUserAdminSchema,
-    userBillingSchema
+    userBillingSchema,
+    passwordUpdateSchema
 }
