@@ -53,7 +53,7 @@ let editUserAdminSchema = yup.object({
     username: yup.string(),
     email: yup.string().email('Not a valid email'),
     profileURL: yup.string().url('Not a valid profile URL'),
-    password: yup.string().matches(PASSWORD_REGEX, 'Password must contain uppercase and lowercase letters, a number and a special character. Plus be at least 8 characters long').required(),
+    password: yup.string().matches(PASSWORD_REGEX, 'Password must contain uppercase and lowercase letters, a number and a special character. Plus be at least 8 characters long'),
     // tipos de usuario. 0 admin, 1 developer, 2 normal
     tipo: yup.number().min(0).max(2),
     billetera: yup.number().positive(),
