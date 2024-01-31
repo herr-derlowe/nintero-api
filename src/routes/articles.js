@@ -7,7 +7,12 @@ const userService = require('../services/userService');
 const { tokenAuthentication, checkTipo } = require('../middleware/jwt-auth');
 
 router.get('/', (req, res, next) => {
-    articleService.findAllArticles().then((documents) => {
+    const paginate_options = {
+        limit: parseInt(req.query.limit) || 10,
+        page: parseInt(req.query.page) || 1
+    };
+
+    articleService.findAllArticles(paginate_options).then((documents) => {
         return res.status(200).json(documents);
     })
     .catch(error => {
@@ -42,8 +47,12 @@ router.get('/:articleid', (req, res, next) => {
 
 router.get('/search/:query', (req, res, next) => {
     const article_query = req.params.query;
+    const paginate_options = {
+        limit: parseInt(req.query.limit) || 10,
+        page: parseInt(req.query.page) || 1
+    };
 
-    articleService.findArticleByTitle(article_query).then((document) => {
+    articleService.findArticleByTitle(article_query, paginate_options).then((document) => {
         if (document.length !== 0) {
             return res.status(200).json(document);
         } else {
@@ -62,6 +71,11 @@ router.get('/search/:query', (req, res, next) => {
 });
 
 router.post('/search/:query/filter', (req, res, next) => {
+    const paginate_options = {
+        limit: parseInt(req.query.limit) || 10,
+        page: parseInt(req.query.page) || 1
+    };
+
     try {
         const filters_body = {
             lte: new Date(req.body.lte),
@@ -88,7 +102,7 @@ router.post('/search/:query/filter', (req, res, next) => {
         }
     }
 
-    articleService.findArticleWithFilters(req.body, req.params.query).then((document) => {
+    articleService.findArticleWithFilters(req.body, paginate_options, req.params.query).then((document) => {
         if (document.length !== 0) {
             return res.status(200).json(document);
         } else {
@@ -107,6 +121,11 @@ router.post('/search/:query/filter', (req, res, next) => {
 });
 
 router.post('/filter', (req, res, next) => {
+    const paginate_options = {
+        limit: parseInt(req.query.limit) || 10,
+        page: parseInt(req.query.page) || 1
+    };
+
     try {
         const filters_body = {
             lte: new Date(req.body.lte),
@@ -132,7 +151,7 @@ router.post('/filter', (req, res, next) => {
         }
     }
 
-    articleService.findArticleWithFilters(req.body).then((document) => {
+    articleService.findArticleWithFilters(req.body, paginate_options).then((document) => {
         if (document.length !== 0) {
             return res.status(200).json(document);
         } else {

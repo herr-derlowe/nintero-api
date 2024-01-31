@@ -1,7 +1,10 @@
 const Article = require('../models/articleModel');
 
-async function findAllArticles() {
-    return await Article.find().populate('author').sort({ creationDate: -1 }).exec();
+async function findAllArticles(paginate_options) {
+    paginate_options.populate = 'author';
+    paginate_options.sort = {creationDate: -1};
+    return await Article.paginate({}, paginate_options);
+    // return await Article.find().populate('author').sort({ creationDate: -1 }).exec();
 }
 
 /**
@@ -11,13 +14,18 @@ async function findArticleById(article_id) {
     return await Article.findById(article_id).populate('author').exec();
 }
 
-async function findArticleByTitle(article_title_query) {
+async function findArticleByTitle(article_title_query, paginate_options) {
+    paginate_options.populate = 'author';
+    paginate_options.sort = {creationDate: -1};
     const query = { title: { $regex: article_title_query, $options: 'i' } };
-    return await Article.find(query).populate('author').sort({ creationDate: -1 }).exec();
+    return await Article.paginate(query, paginate_options);
+    //return await Article.find(query).populate('author').sort({ creationDate: -1 }).exec();
 }
 
-async function findArticleWithFilters(article_filter_obj, article_title_query) {
+async function findArticleWithFilters(article_filter_obj, paginate_options, article_title_query) {
     let filter_query = {};
+    paginate_options.populate = 'author';
+    paginate_options.sort = {creationDate: -1};
 
     if (article_title_query) {
         filter_query.title = { $regex: article_title_query, $options: 'i' };
@@ -35,7 +43,8 @@ async function findArticleWithFilters(article_filter_obj, article_title_query) {
             $lt: lt_filter.setDate(lt_filter.getDate() + 1)
         };
     }
-    return await Article.find(filter_query).populate('author').sort({ creationDate: -1 }).exec();
+    return await Article.paginate(filter_query, paginate_options);
+    //return await Article.find(filter_query).populate('author').sort({ creationDate: -1 }).exec();
 }
 
 async function createNewArticle(article_body, author_id) {

@@ -1,2 +1,0 @@
-En rutas de juego, para '/admin/update'
-- CAMBIAR VERIFICACION A JUEGOS REGISTRADOS
