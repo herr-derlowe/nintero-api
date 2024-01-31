@@ -1,6 +1,6 @@
 const express= require('express');
 const router = express.Router();
-const userSchema = require('../validators/userschemas');
+const userSchema = require('../verifiers/userschemas');
 const userService = require('../services/userService');
 const jwt = require('jsonwebtoken');
 const { tokenAuthentication, checkTipo } = require('../middleware/jwt-auth');
@@ -251,6 +251,22 @@ router.put('/update', tokenAuthentication, checkTipo([0, 1, 2]), async (req, res
 // User update through route '/api/users/admin/update'. Expects valid JWT of type 0 and any user field to update as per 'editUserAdminSchema' in './validors'
 // Updates the given user as per the required 'userid' field in 'editUserAdminSchema' in '../validators/userschemas.js'
 router.put('/admin/update', tokenAuthentication, checkTipo([0]), async (req, res, next) => {
+    try {
+        if ('fechaCreacion' in req.body) {
+            req.body.fechaCreacion = new Date(req.body.fechaCreacion);
+        }
+
+        if ('fechaEdicion' in req.body) {
+            req.body.fechaEdicion = new Date(req.body.fechaEdicion);
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: "Could not convert date fields",
+            error: error.message
+        }); 
+    }
+    
     try {
         //console.log(req.body);
         userSchema.editUserAdminSchema.validateSync(req.body, {abortEarly: false});

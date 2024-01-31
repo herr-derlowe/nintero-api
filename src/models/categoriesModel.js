@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
 
-const cateogiesModel = mongoose.Schema({
+const categoriesModel = mongoose.Schema({
   nombre: String,
   fechaCreacion: Date,
 });
 
-module.exports = mongoose.model("categories", cateogiesModel);
+module.exports = mongoose.model("categories", categoriesModel);
