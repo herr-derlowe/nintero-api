@@ -23,7 +23,7 @@ let filterArticleSchemaWithAuthor = yup.object({
           return mongoose.Types.ObjectId.isValid(value);
         }
     })
-});
+}).required().noUnknown(true).strict();
 
 let udpateArticleSchema = yup.object({
     title: yup.string(),
