@@ -1,8 +1,9 @@
-const jwt = require("jsonwebtoken");
+// const jwt = require("jsonwebtoken");
 const express = require("express");
 const router = express.Router();
 const categoriesService = require("../services/categoriesService");
-const userservice = require("../services/userService");
+// const userservice = require("../services/userService");
+const { tokenAuthentication, checkTipo } = require('../middleware/jwt-auth');
 
 router.get("/get", (req, res, next) => {
   //res.send("testing category");
@@ -62,7 +63,7 @@ router.get("/getname/:nombre", (req, res, next) => {
     });
 });
 
-router.post("/post", (req, res, next) => {
+router.post("/post", tokenAuthentication, checkTipo([0]), (req, res, next) => {
   const category = {
     nombre: req.body.nombre,
   };
@@ -89,7 +90,7 @@ router.post("/post", (req, res, next) => {
   }
 });
 
-router.put("/put/:categoryid", (req, res, next) => {
+router.put("/put/:categoryid", tokenAuthentication, checkTipo([0]), (req, res, next) => {
   const categoryid = req.params.categoryid;
   categoriesService
     .updateCategory(categoryid, req.body)
@@ -114,7 +115,7 @@ router.put("/put/:categoryid", (req, res, next) => {
     });
 });
 
-router.delete("/delete/:categoryid", (req, res, next) => {
+router.delete("/delete/:categoryid", tokenAuthentication, checkTipo([0]), (req, res, next) => {
   const categoryid = req.params.categoryid;
 
   categoriesService
