@@ -33,6 +33,10 @@ async function findAllUsers() {
     return await User.find().exec();
 }
 
+async function findAllDevelopers() {
+    return await User.find({ tipo: 1 }).exec();
+}
+
 /**
  * @description DB single user service. Expects user ObjectId and returns promise containing user document
 */
@@ -155,6 +159,7 @@ async function validatePassword(password, user){
 
 module.exports = {
     findAllUsers,
+    findAllDevelopers,
     findUserById,
     findUsernameEmail,
     findByEmail,

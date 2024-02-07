@@ -19,6 +19,19 @@ router.get('/getall', tokenAuthentication, checkTipo([0]), (req, res, next) => {
     });
 });
 
+router.get('/get/developers', (req, res, next) => {
+    userService.findAllDevelopers().then((documents) => {
+        return res.status(200).json(documents);
+    })
+    .catch(error => {
+        console.log(error);
+        return res.status(500).json({
+            message: 'Could not get developers',
+            error: error
+        });
+    });
+});
+
 // User route '/api/users/getid/:userid'. Currently expects a valid userid and a JWT of user type 0
 router.get('/getid/:userid', tokenAuthentication, checkTipo([0]), (req, res, next) => {
     const userid = req.params.userid;
