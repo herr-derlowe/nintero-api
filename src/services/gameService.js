@@ -6,12 +6,55 @@ async function findAllGames(paginate_options) {
     return await Game.paginate({}, paginate_options);
 }
 
+async function findAllGamesByDownloads(amount) {
+    // paginate_options.populate = [{path: 'developer'}, {path: 'category'}];
+    // paginate_options.sort = {downloads: -1};
+    // paginate_options.limit = 
+    // return await Game.paginate({}, paginate_options);
+    return await Game.find().populate('developer').populate('category').sort({downloads: -1}).limit(amount).exec();
+}
+
 async function findGameById(game_id) {
     return await Game.findById(game_id).populate('developer').populate('category').exec();
 }
 
-// TODO: findGameByTitle
-// TODO: findGameWithFilters
+async function findGamesWithFilters(filter_options, paginate_options) {
+    let filter_query = {};
+    paginate_options.populate = [{path: 'developer'}, {path: 'category'}];
+    //paginate_options.sort = {creationDate: -1};
+
+    if ('downloads' in filter_options) {
+        switch (filter_options.downloads) {
+            case 'ASCD':
+                paginate_options.sort = {downloads: 1};
+                break;
+            case 'DESC':
+                paginate_options.sort = {downloads: -1};
+                break;
+        }
+    } else {
+        paginate_options.sort = {creationDate: -1};
+    }
+
+    if ('name' in filter_options) {
+        filter_query.name = { $regex: filter_options.name, $options: 'i' };
+    }
+
+    if ('category' in filter_options) {
+        filter_query.category = { $in: filter_options.category }
+    }
+
+    if ('developer' in filter_options) {
+        // console.log(article_filter_obj.author);
+        filter_query.developer = filter_options.developer;
+    }
+
+    if ('price' in filter_options) {
+        filter_query.price = { $lte: filter_options.price }
+    }
+
+    return await Game.paginate(filter_query, paginate_options);
+}
 
 async function createNewGame(game_detail, developer_id) {
     const game_doc = new Game({
@@ -44,7 +87,9 @@ async function updateGameById(game_id, update_data) {
 
 module.exports = {
     findAllGames,
+    findAllGamesByDownloads,
     findGameById,
+    findGamesWithFilters,
     createNewGame,
     deleteGameById,
     updateGameById
