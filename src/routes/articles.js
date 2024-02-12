@@ -127,16 +127,22 @@ router.post('/filter', (req, res, next) => {
     };
 
     try {
-        const filters_body = {
-            lte: new Date(req.body.lte),
-            gte: new Date(req.body.gte),
-            author: req.body.author
-        }
         //console.log(req.body);
-        if (filters_body.author) {
-            articleSchema.filterArticleSchemaWithAuthor.validateSync(filters_body, {abortEarly: false});
+        if (req.body.author) {
+            let validating_body = {
+                author: req.body.author
+            };
+            if (req.body.gte && req.body.lte) {
+                validating_body.gte = new Date(req.body.gte),
+                validating_body.lte = new Date(req.body.lte)
+            }
+
+            articleSchema.filterArticleSchemaWithAuthor.validateSync(validating_body, {abortEarly: false});
         } else {
-            articleSchema.filterArticleSchema.validateSync(filters_body, {abortEarly: false});
+            articleSchema.filterArticleSchema.validateSync({
+                lte: new Date(req.body.lte),
+                gte: new Date(req.body.gte)
+            }, {abortEarly: false});
         }
     } catch (e) {
         console.log(e.errors);

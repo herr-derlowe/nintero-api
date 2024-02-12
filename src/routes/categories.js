@@ -177,7 +177,6 @@ router.delete(
   checkTipo([0]),
   (req, res, next) => {
     const categoryid = req.params.categoryid;
-
     categoriesService
       .deleteCategory(categoryid)
       .then((data) => {
