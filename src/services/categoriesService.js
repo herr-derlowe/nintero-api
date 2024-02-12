@@ -1,5 +1,4 @@
 const Categories = require("../models/categoriesModel");
-const mongo = require("mongodb");
 
 async function findAllCategories() {
   return await Categories.find().exec();
@@ -14,6 +13,20 @@ async function findByName(nombre) {
   const result = await Categories.findOne(query).exec();
 
   return result;
+}
+
+async function findName(nombre) {
+  const result_nombre = await Categories.findOne({ nombre: nombre }).exec();
+
+  let find_detail = {
+    found: false,
+  };
+
+  if (result_nombre) {
+    find_detail.found = true;
+    find_detail.result_nombre = "Category already in use";
+  }
+  return find_detail;
 }
 
 async function createCategory(userbody) {
@@ -42,6 +55,7 @@ module.exports = {
   findAllCategories,
   findUCategoryById,
   findByName,
+  findName,
   createCategory,
   updateCategory,
   deleteCategory,
