@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const categoriesService = require("../services/categoriesService");
-const categoriesSchema = require("../validators/categoriesschemas");
+const categoriesSchema = require("../verifiers/categoriesschemas");
 const { tokenAuthentication, checkTipo } = require("../middleware/jwt-auth");
 
 //Get Categories
-router.get("/get", tokenAuthentication, checkTipo([0]), (req, res, next) => {
+router.get("/get", (req, res, next) => {
   //res.send("testing category");
   categoriesService.findAllCategories().then((data) => {
     return res.status(200).json(data);
@@ -14,8 +14,6 @@ router.get("/get", tokenAuthentication, checkTipo([0]), (req, res, next) => {
 //Get Category By Id
 router.get(
   "/getid/:categoryid",
-  tokenAuthentication,
-  checkTipo([0]),
   (req, res, next) => {
     const categoryid = req.params.categoryid;
 
@@ -42,8 +40,6 @@ router.get(
 //Get Category By Name
 router.get(
   "/getname/:nombre",
-  tokenAuthentication,
-  checkTipo([0]),
   (req, res, next) => {
     const nombre = req.params.nombre;
 

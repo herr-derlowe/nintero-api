@@ -24,7 +24,7 @@ let registerUserAdminSchema = yup.object({
     confirmPassword: yup.string().oneOf([yup.ref('password'), null], "Passwords do not match").required(),
     // tipos de usuario. 0 admin, 1 developer, 2 normal
     tipo: yup.number().min(0).max(2).required(),
-    billetera: yup.number().positive().required(),
+    billetera: yup.number().min(0).required(),
     blocked: yup.boolean().required()
 }).required();
 
@@ -56,7 +56,7 @@ let editUserAdminSchema = yup.object({
     password: yup.string().matches(PASSWORD_REGEX, 'Password must contain uppercase and lowercase letters, a number and a special character. Plus be at least 8 characters long'),
     // tipos de usuario. 0 admin, 1 developer, 2 normal
     tipo: yup.number().min(0).max(2),
-    billetera: yup.number().positive(),
+    billetera: yup.number().min(0),
     fechaCreacion: yup.date(),
     fechaEdicion: yup.date(),
     blocked: yup.boolean(),

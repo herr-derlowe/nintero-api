@@ -24,7 +24,7 @@ router.get('/', (req, res, next) => {
     });
 });
 
-router.get('/:gameid', (req, res, next) => {
+router.get('/selectid/:gameid', (req, res, next) => {
     const game_id = req.params.gameid;
 
     gameService.findGameById(game_id).then((document) => {
@@ -40,6 +40,85 @@ router.get('/:gameid', (req, res, next) => {
         console.log(error);
         return res.status(500).json({
             message: 'Could not get that game',
+            error: error
+        });
+    });
+});
+
+router.get('/sortdownloads', (req, res, next) => {
+    const amount_of_games = parseInt(req.query.amount) || 4;
+    console.log("Amount selected: " + amount_of_games);
+    
+    gameService.findAllGamesByDownloads(amount_of_games).then((documents) => {
+        return res.status(200).json(documents);
+    })
+    .catch(error => {
+        console.log(error);
+        return res.status(500).json({
+            message: 'Could not get games by downloads',
+            error: error
+        });
+    });
+});
+
+router.post('/filter', async (req, res, next) => {
+    const paginate_options = {
+        limit: parseInt(req.query.limit) || 10,
+        page: parseInt(req.query.page) || 1
+    };
+
+    try {
+        if (req.body.price) {
+            req.body.price = parseFloat(req.body.price);
+        }
+
+        gameSchema.filterGameSchema.validateSync(req.body, {abortEarly: false});
+        if ('developer' in req.body) {
+            globalSchema.handleObjectIdSchema.validateSync({
+                entity_id: req.body.developer
+            }, {abortEarly: false});
+        }
+    } catch (e) {
+        console.log(e.errors);
+        if (e.errors !== undefined) {
+            return res.status(422).json({
+                error: e.errors
+            });
+        }
+    }
+
+    try {
+        if ('developer' in req.body) {
+            const found_user = await userService.findUserById(req.body.developer);
+            if (found_user) {
+                console.log(found_user);
+            } else {
+                return res.status(404).json({
+                    message: "That developer does not exist"
+                });
+            }
+        }
+    } catch (e) {
+        console.log(error);
+        return res.status(500).json({
+            message: "Could not verify developer",
+            error: error.message
+        }); 
+    }
+
+    gameService.findGamesWithFilters(req.body, paginate_options).then((document) => {
+        if (document.docs.length !== 0) {
+            return res.status(200).json(document);
+        } else {
+            return res.status(404).json({
+                message: "Couldn't find any games with those filters"
+            });
+        }
+    })
+    .catch(error => {
+        console.log(error);
+        return res.status(500).json({
+            message: 'Could not get any games',
             error: error
         });
     });
