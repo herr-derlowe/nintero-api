@@ -12,6 +12,7 @@ const categoriesRoutes = require('./src/routes/categories');
 const validatorRoutes = require('./src/routes/validators');
 const articleRoutes = require('./src/routes/articles');
 const gameRoutes = require('./src/routes/games');
+const requestRoutes = require('./src/routes/request');
 
 mongoose.connect(process.env.MONGODB_URI, { dbName: 'ninterodb' });
 
@@ -39,6 +40,7 @@ app.use('/api/categories/', categoriesRoutes);
 app.use('/api/validators/', validatorRoutes);
 app.use('/api/articles/', articleRoutes);
 app.use('/api/games/', gameRoutes);
+app.use('/api/request/', requestRoutes);
 
 //app.use('/api/category', (req,res,next)=>res.json({text: "prueba"}));
 
