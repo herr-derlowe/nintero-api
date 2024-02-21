@@ -50,6 +50,15 @@ const gameModel = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    wishlistedUsers: [{
+        type: mongoose.Types.ObjectId, ref: 'User'
+    }],
+    wishlistedUsersCount: {
+        type: Number,
+        get: function () {
+            return this.wishlistedUsers.length
+        }
+    },
     publishDate: Date,
     updateDate: Date
 }, { id: false, toJSON: { getters: true}});

@@ -8,6 +8,8 @@ require('dotenv').config();
 
 // setting up api routes variables
 const userRoutes = require('./src/routes/users');
+const userFollowingRoutes = require('./src/routes/usersfollowing');
+const userWishlistRoutes = require('./src/routes/userswishlist');
 const categoriesRoutes = require('./src/routes/categories');
 const validatorRoutes = require('./src/routes/validators');
 const articleRoutes = require('./src/routes/articles');
@@ -35,6 +37,8 @@ app.use((req, res, next) => {
 
 // API routes
 app.use('/api/users/', userRoutes);
+app.use('/api/following/', userFollowingRoutes);
+app.use('/api/wishlist/', userWishlistRoutes)
 app.use('/api/categories/', categoriesRoutes);
 app.use('/api/validators/', validatorRoutes);
 app.use('/api/articles/', articleRoutes);

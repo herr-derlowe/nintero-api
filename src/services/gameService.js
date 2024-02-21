@@ -56,6 +56,11 @@ async function findGamesWithFilters(filter_options, paginate_options) {
     return await Game.paginate(filter_query, paginate_options);
 }
 
+async function findGamesByIdArray(id_array){
+    let search_query = { $in: id_array};
+    return await User.find({ _id: search_query }).populate('developer').populate('category').exec();
+}
+
 async function createNewGame(game_detail, developer_id) {
     const game_doc = new Game({
         name: game_detail.name,
@@ -90,6 +95,7 @@ module.exports = {
     findAllGamesByDownloads,
     findGameById,
     findGamesWithFilters,
+    findGamesByIdArray,
     createNewGame,
     deleteGameById,
     updateGameById

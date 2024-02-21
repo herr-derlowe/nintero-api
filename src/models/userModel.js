@@ -25,8 +25,44 @@ const userModel = mongoose.Schema({
     fechaCreacion: Date,
     fechaEdicion: Date,
     blocked: Boolean,
-    wishlist: [mongoose.Types.ObjectId],
-    libreria: [mongoose.Types.ObjectId]
-}, {id: false, toJSON: { getters: true}});
+    following: [{
+        type: mongoose.Types.ObjectId, ref: 'User'
+    }],
+    followingCount: {
+        type: Number,
+        get: function () {
+            return this.following.length
+        }
+    },
+    followers: [{
+        type: mongoose.Types.ObjectId, ref: 'User'
+    }],
+    followersCount: {
+        type: Number,
+        get: function () {
+            return this.followers.length
+        }
+    },
+    wishlist: [{
+        type: mongoose.Types.ObjectId, ref: 'Game'
+    }],
+    wishlistCount: {
+        type: Number,
+        get: function () {
+            return this.wishlist.length
+        }
+    },
+    libreria: [{
+        type: mongoose.Types.ObjectId, ref: 'Game'
+    }]
+}, {id: false, toJSON: { getters: true/*, virtuals: true*/}});
+
+// userModel.virtual('followingCount').get(function() {
+//     return this.following.length;
+// });
+
+// userModel.virtual('followersCount').get(function() {
+//     return this.followers.length;
+// });
 
 module.exports = mongoose.model('User', userModel);

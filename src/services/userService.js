@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const User = require('../models/userModel');
+const Game = require('../models/gameModel');
 const mongo = require('mongodb');
 
 /**
@@ -19,6 +20,8 @@ async function createUser(userbody) {
         fechaCreacion: new Date(),
         fechaEdicion: new Date(),
         blocked: false,
+        following: [],
+        followers: [],
         wishlist: [],
         libreria: []
     });
@@ -30,26 +33,26 @@ async function createUser(userbody) {
  * @description DB user listing service, returns promise containing array of user documents
 */
 async function findAllUsers() {
-    return await User.find().exec();
+    return await User.find().populate('following').populate('followers').populate('wishlist').populate('libreria').exec();
 }
 
 async function findAllDevelopers() {
-    return await User.find({ tipo: 1 }).exec();
+    return await User.find({ tipo: 1 }).populate('following').populate('followers').populate('wishlist').populate('libreria').exec();
 }
 
 /**
  * @description DB single user service. Expects user ObjectId and returns promise containing user document
 */
 async function findUserById(userid) {
-    return await User.findById(userid).exec();
+    return await User.findById(userid).populate('following').populate('followers').populate('wishlist').populate('libreria').exec();
 }
 
 /**
  * @description DB user email and name service. Expects user email and username, returns promise containing boolean if it finds any of them
 */
 async function findUsernameEmail(username, email) {
-    const result_username = await User.findOne({username: username}).exec();
-    const result_email = await User.findOne({email: email}).exec();
+    const result_username = await User.findOne({username: username}).populate('following').populate('followers').populate('wishlist').populate('libreria').exec();
+    const result_email = await User.findOne({email: email}).populate('following').populate('followers').populate('wishlist').populate('libreria').exec();
     
     let find_detail = {
         found: false
@@ -71,7 +74,7 @@ async function findUsernameEmail(username, email) {
 */
 async function findByEmail(email) {
     let query = {email: email};
-    const result = await User.findOne(query).exec();
+    const result = await User.findOne(query).populate('following').populate('followers').populate('wishlist').populate('libreria').exec();
     
     return result;
 }
@@ -81,7 +84,7 @@ async function findByEmail(email) {
 */
 async function findUserByUsername(username) {
     let query = {username: username};
-    const result = await User.findOne(query).exec();
+    const result = await User.findOne(query).populate('following').populate('followers').populate('wishlist').populate('libreria').exec();
     
     return result;
 }
@@ -91,7 +94,7 @@ async function findUserByUsername(username) {
 */
 async function findUsersByIdArray(id_array){
     let search_query = { $in: id_array};
-    return await User.find({ _id: search_query });
+    return await User.find({ _id: search_query }).populate('following').populate('followers').populate('wishlist').populate('libreria').exec();
 }
 
 /**
@@ -119,6 +122,46 @@ async function checkUserFunds(userid) {
     return await User.findById(userid, 'billetera');
 }
 
+async function getUserFollowing(userid) {
+    return await User.findOne({ _id: userid }, 'following followingCount').populate('following');
+}
+
+async function getUserFollowers(userid) {
+    return await User.findOne({ _id: userid }, 'followers followersCount').populate('followers');
+}
+
+async function addUserFollowing(self_userid, userid_to_follow) {
+    const selfuser_update_query = { $addToSet: { following: userid_to_follow }};
+    const followeduser_update_query = { $addToSet: { followers: self_userid } }
+    await User.findOneAndUpdate({ _id: userid_to_follow }, followeduser_update_query);
+    return await User.findOneAndUpdate({ _id: self_userid }, selfuser_update_query, { new: true });
+}
+
+async function removeUserFollowing(self_userid, userid_to_unfollow) {
+    const selfuser_update_query = { $pull: { following: userid_to_unfollow }};
+    const unfolloweduser_update_query = { $pull: { followers: self_userid } }
+    await User.findOneAndUpdate({ _id: userid_to_unfollow }, unfolloweduser_update_query);
+    return await User.findOneAndUpdate({ _id: self_userid }, selfuser_update_query, { new: true });
+}
+
+async function getUserWishlist(userid) {
+    return await User.findOne({ _id: userid }, 'wishlist wishlistCount').populate('wishlist');
+} 
+
+async function addUserWishlist(userid, wishlist_gameid) {
+    const selfuser_update_query = { $addToSet: { wishlist: wishlist_gameid }};
+    const wishlistedgame_update_query = { $addToSet: { wishlistedUsers: userid } }
+    await Game.findOneAndUpdate({ _id: wishlist_gameid }, wishlistedgame_update_query);
+    return await User.findOneAndUpdate({ _id: userid }, selfuser_update_query, { new: true });
+}
+
+async function removeUserWishlist(userid, wishlist_gameid) {
+    const selfuser_update_query = { $pull: { wishlist: wishlist_gameid }};
+    const wishlistedgame_update_query = { $pull: { wishlistedUsers: userid } }
+    await Game.findOneAndUpdate({ _id: wishlist_gameid }, wishlistedgame_update_query);
+    return await User.findOneAndUpdate({ _id: userid }, selfuser_update_query, { new: true });
+}
+
 /**
  * @description DB user register admin service, expects user main data from '/api/users/admin/register' route
 */
@@ -136,6 +179,8 @@ async function createUserAdmin(userbody) {
         fechaCreacion: new Date(),
         fechaEdicion: new Date(),
         blocked: userbody.blocked,
+        following: [],
+        followers: [],
         wishlist: [],
         libreria: []
     });
@@ -172,5 +217,12 @@ module.exports = {
     deleteUserById,
     updateUserFunds,
     checkUserFunds,
-    createUserAdmin
+    createUserAdmin,
+    getUserFollowing,
+    getUserFollowers,
+    addUserFollowing,
+    removeUserFollowing,
+    getUserWishlist,
+    addUserWishlist,
+    removeUserWishlist
 }
