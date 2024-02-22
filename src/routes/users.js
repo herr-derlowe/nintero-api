@@ -2,6 +2,7 @@ const express= require('express');
 const router = express.Router();
 const userSchema = require('../verifiers/userschemas');
 const userService = require('../services/userService');
+const gameService = require('../services/gameService');
 const jwt = require('jsonwebtoken');
 const { tokenAuthentication, checkTipo } = require('../middleware/jwt-auth');
 
@@ -33,7 +34,7 @@ router.get('/get/developers', (req, res, next) => {
 });
 
 // User route '/api/users/getid/:userid'. Currently expects a valid userid and a JWT of user type 0
-router.get('/getid/:userid', tokenAuthentication, checkTipo([0]), (req, res, next) => {
+router.get('/getid/:userid', (req, res, next) => {
     const userid = req.params.userid;
 
     userService.findUserById(userid).then((document) => {
@@ -55,7 +56,7 @@ router.get('/getid/:userid', tokenAuthentication, checkTipo([0]), (req, res, nex
 });
 
 // User route '/api/getusername/:username'. Currently expects a valid username and a JWT of user type 0
-router.get('/getusername/:username', tokenAuthentication, checkTipo([0]), (req, res, next) => {
+router.get('/getusername/:username', (req, res, next) => {
     const username = req.params.username;
 
     userService.findUserByUsername(username).then((document) => {
@@ -293,28 +294,45 @@ router.put('/admin/update', tokenAuthentication, checkTipo([0]), async (req, res
     }
 
     try {
-        // NOTA: CAMBIAR VERIFICACION A JUEGOS REGISTRADOS
-        if ('wishlist' in req.body) {
-            const users_wishlist_found = await userService.findUsersByIdArray(req.body.wishlist);
-            if (users_wishlist_found.length != req.body.wishlist.length) {
+        if ('following' in req.body) {
+            const users_following_found = await userService.findUsersByIdArray(req.body.following);
+            if (users_following_found.length != req.body.following.length) {
                 return res.status(400).json({
-                    message: "One or more users in 'wishlist' do not match the database. Make sure they exist and are not repeated"
+                    message: "One or more users in 'following' do not match the database. Make sure they exist and are not repeated"
+                }); 
+            }
+        }
+
+        if ('followers' in req.body) {
+            const users_followers_found = await userService.findUsersByIdArray(req.body.followers);
+            if (users_followers_found.length != req.body.followers.length) {
+                return res.status(400).json({
+                    message: "One or more users in 'followers' do not match the database. Make sure they exist and are not repeated"
+                }); 
+            }
+        }
+
+        if ('wishlist' in req.body) {
+            const games_wishlist_found = await gameService.findGamesByIdArray(req.body.wishlist);
+            if (games_wishlist_found.length != req.body.wishlist.length) {
+                return res.status(400).json({
+                    message: "One or more games in 'wishlist' do not match the database. Make sure they exist and are not repeated"
                 }); 
             }
         }
 
         if ('libreria' in req.body) {
-            const users_libreria_found = await userService.findUsersByIdArray(req.body.libreria);
-            if (users_libreria_found.length != req.body.libreria.length) {
+            const games_libreria_found = await gameService.findGamesByIdArray(req.body.libreria);
+            if (games_libreria_found.length != req.body.libreria.length) {
                 return res.status(400).json({
-                    message: "One or more users in 'libreria' do not match the database. Make sure they exist and are not repeated"
+                    message: "One or more games in 'libreria' do not match the database. Make sure they exist and are not repeated"
                 }); 
             }
         }
     } catch (error) {
         console.log(error);
         return res.status(500).json({
-            message: "Could not verify 'wishlist' and/or 'libreria' integrity",
+            message: "Could not verify 'following', 'followers', 'wishlist' and/or 'libreria' integrity",
             error: error.message
         }); 
     }

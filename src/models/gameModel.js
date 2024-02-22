@@ -10,6 +10,7 @@ function getPrice(value) {
 
 const gameModel = new mongoose.Schema({
     name: String,
+    about: String,
     developer: { type: mongoose.Types.ObjectId, ref: 'User' },
     category: [{
         type: mongoose.Types.ObjectId, ref: 'categories'
@@ -49,6 +50,15 @@ const gameModel = new mongoose.Schema({
     downloads: {
         type: Number,
         default: 0
+    },
+    wishlistedUsers: [{
+        type: mongoose.Types.ObjectId, ref: 'User'
+    }],
+    wishlistedUsersCount: {
+        type: Number,
+        get: function () {
+            return this.wishlistedUsers.length
+        }
     },
     publishDate: Date,
     updateDate: Date

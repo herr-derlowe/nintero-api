@@ -60,15 +60,27 @@ let editUserAdminSchema = yup.object({
     fechaCreacion: yup.date(),
     fechaEdicion: yup.date(),
     blocked: yup.boolean(),
+    following: yup.array().of(yup.string().test({
+        name: "valid-mongodb-id-following",
+        message: "Invalid 'USER' ID in 'following'",
+        test: (value) => {
+          return mongoose.Types.ObjectId.isValid(value);
+        }})),
+    followers: yup.array().of(yup.string().test({
+        name: "valid-mongodb-id-followers",
+        message: "Invalid 'USER' ID in 'followers'",
+        test: (value) => {
+            return mongoose.Types.ObjectId.isValid(value);
+        }})),
     wishlist: yup.array().of(yup.string().test({
         name: "valid-mongodb-id-wishlist",
-        message: "Invalid 'JUEGO' ID in 'wishlist'",
+        message: "Invalid 'GAME' ID in 'wishlist'",
         test: (value) => {
           return mongoose.Types.ObjectId.isValid(value);
         }})),
     libreria: yup.array().of(yup.string().test({
-        name: "valid-mongodb-id-libreria in 'libreria'",
-        message: "Invalid 'JUEGO' ID",
+        name: "valid-mongodb-id-libreria",
+        message: "Invalid 'GAME' ID in 'libreria'",
         test: (value) => {
           return mongoose.Types.ObjectId.isValid(value);
         }})) 

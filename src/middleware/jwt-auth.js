@@ -37,7 +37,7 @@ const tokenAuthentication = (req, res, next) => {
  * @description Validates user type inside of argument array, refer to user models for specification
  */
 const checkTipo = (tipos) => async (req, res, next) => {
-    // userd from req.tokenData.userid present in token singing
+    // userid from req.tokenData.userid present in token singing
     try {
         const user = await findUserById(req.tokenData.userid);
         if (!tipos.includes(user.tipo)) {

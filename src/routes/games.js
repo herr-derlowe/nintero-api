@@ -138,6 +138,7 @@ router.post('/create', tokenAuthentication, checkTipo([0, 1]), (req, res, next) 
     
     const new_game = {
         name: req.body.name,
+        about: req.body.about,
         category: req.body.category,
         thumbnailURL: req.body.thumbnailURL,
         gameImages: req.body.gameImages,
