@@ -10,6 +10,7 @@ function getPrice(value) {
 
 const gameModel = new mongoose.Schema({
     name: String,
+    about: String,
     developer: { type: mongoose.Types.ObjectId, ref: 'User' },
     category: [{
         type: mongoose.Types.ObjectId, ref: 'categories'

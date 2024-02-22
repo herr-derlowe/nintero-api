@@ -16,6 +16,7 @@ let technical_requirements = yup.object({
 let createGameSchema = yup.object({
     name: yup.string().required(),
     // developer is handled automatically
+    about: yup.string().required(),
     category: yup.array().of(yup.string().test(
         {
             name: "valid-mongodb-id-category",
@@ -38,6 +39,7 @@ let createGameSchema = yup.object({
 
 let updateGameSchema = yup.object({
     name: yup.string(),
+    about: yup.string(),
     category: yup.array().of(yup.string().test(
         {
             name: "valid-mongodb-id-category",
@@ -57,6 +59,7 @@ let updateGameSchema = yup.object({
 
 let updateAdminGameSchema = yup.object({
     name: yup.string(),
+    about: yup.string(),
     developer: yup.string(),
     category: yup.array().of(yup.string().test(
         {

@@ -64,6 +64,7 @@ async function findGamesByIdArray(id_array){
 async function createNewGame(game_detail, developer_id) {
     const game_doc = new Game({
         name: game_detail.name,
+        about: game_detail.about,
         developer: developer_id,
         category: game_detail.category,
         thumbnailURL: game_detail.thumbnailURL,
@@ -73,6 +74,7 @@ async function createNewGame(game_detail, developer_id) {
         recreq: game_detail.recreq,
         blocked: false,
         downloads: 0,
+        wishlistedUsers: [],
         publishDate: new Date(),
         updateDate: new Date()
     });
