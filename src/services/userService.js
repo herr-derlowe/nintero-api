@@ -47,6 +47,10 @@ async function findUserById(userid) {
     return await User.findById(userid).populate('following').populate('followers').populate('wishlist').populate('libreria').exec();
 }
 
+async function findUserByIdWithoutPupulate(userid) {
+    return await User.findById(userid).exec();
+}
+
 /**
  * @description DB user email and name service. Expects user email and username, returns promise containing boolean if it finds any of them
 */
@@ -206,6 +210,7 @@ module.exports = {
     findAllUsers,
     findAllDevelopers,
     findUserById,
+    findUserByIdWithoutPupulate,
     findUsernameEmail,
     findByEmail,
     findUserByUsername,

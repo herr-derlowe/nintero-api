@@ -2,6 +2,7 @@ const express= require('express');
 const router = express.Router();
 const { tokenAuthentication, checkTipo } = require('../middleware/jwt-auth');
 const gameService = require('../services/gameService');
+const gameNotificationService = require('../services/gameNotificationService');
 const gameSchema = require('../verifiers/gameschemas');
 const globalSchema = require('../verifiers/globalschemas');
 const userService = require('../services/userService');
@@ -257,12 +258,17 @@ router.put('/update/:gameid', tokenAuthentication, checkTipo([1]), async (req, r
                 message: "You are not the author of that game"
             });
         } else if (found_game) {
-            gameService.updateGameById(req.params.gameid, req.body).then((updated_document) => {
+            gameService.updateGameById(req.params.gameid, req.body).then(async (updated_document) => {
                 if (!updated_document) {
                     return res.status(400).json({
                         message: "Game update empty"
                     });
                 } else {
+                    const found_user = await userService.findUserByIdWithoutPupulate(req.tokenData.userid);
+                    console.log("Notification creation user:\n" + found_user);
+                    
+                    const notification_created = await gameNotificationService.createNewGameNotification(req.tokenData, updated_document);
+                    console.log("Notification:\n" + notification_created);
                     return res.status(200).json({
                         message: "Game updated successfully",
                         game: updated_document
