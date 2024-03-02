@@ -3,6 +3,7 @@ const router = express.Router();
 const articleSchema = require('../verifiers/articleschemas');
 const globalSchema = require('../verifiers/globalschemas');
 const articleService = require('../services/articleService');
+const articleNotificationService = require('../services/articleNotificationService');
 const userService = require('../services/userService');
 const { tokenAuthentication, checkTipo } = require('../middleware/jwt-auth');
 
@@ -175,7 +176,7 @@ router.post('/filter', (req, res, next) => {
     });
 });
 
-router.post('/create', tokenAuthentication, checkTipo([0, 1]), (req, res, next) => {
+router.post('/create', tokenAuthentication, checkTipo([0, 1]), async (req, res, next) => {
     const new_article = {
         title: req.body.title,
         thumbnailURL: req.body.thumbnailURL,
@@ -195,23 +196,43 @@ router.post('/create', tokenAuthentication, checkTipo([0, 1]), (req, res, next) 
     }
 
     try {        
-        articleService.createNewArticle(new_article, req.tokenData.userid).then((insert_result) =>{
-            console.log(insert_result);
-            if (insert_result) {
-                return res.status(201).json({
-                    message: 'New article created',
-                    article: insert_result
-                });
-            } else {
-                return res.status(422).json({
-                    message: 'Could not create the user'
-                });
-            }
-        });
+        // articleService.createNewArticle(new_article, req.tokenData.userid).then((insert_result) =>{
+        //     console.log(insert_result);
+        //     if (insert_result) {
+
+
+        //         return res.status(201).json({
+        //             message: 'New article created',
+        //             article: insert_result
+        //         });
+        //     } else {
+        //         return res.status(422).json({
+        //             message: 'Could not create the user'
+        //         });
+        //     }
+        // });
+
+        const insert_result = await articleService.createNewArticle(new_article, req.tokenData.userid);
+        console.log(insert_result);
+        if (insert_result) {
+            const found_user = await userService.findUserByIdWithoutPupulate(req.tokenData.userid);
+            console.log("Notification creation user:\n" + found_user);
+
+            const notification_created = await articleNotificationService.createNewArticleNotification(req.tokenData, insert_result, found_user.followers);
+            console.log("Notification:\n" + notification_created);
+            return res.status(201).json({
+                message: 'New article created',
+                article: insert_result
+            });
+        } else {
+            return res.status(422).json({
+                message: 'Could not create the article'
+            });
+        }
     } catch (error) {
         console.log(error);
         return res.status(500).json({
-            message: 'Could not create the user',
+            message: 'Could not create the article',
             error: error.message
         });
     }
