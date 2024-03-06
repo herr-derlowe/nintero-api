@@ -14,6 +14,14 @@ async function findAllGamesByDownloads(amount) {
     return await Game.find().populate('developer').populate('category').sort({downloads: -1}).limit(amount).exec();
 }
 
+async function findAllGamesByCreationDateDESC(amount) {
+    // paginate_options.populate = [{path: 'developer'}, {path: 'category'}];
+    // paginate_options.sort = {downloads: -1};
+    // paginate_options.limit = 
+    // return await Game.paginate({}, paginate_options);
+    return await Game.find().populate('developer').populate('category').sort({publishDate: -1}).limit(amount).exec();
+}
+
 async function findGameById(game_id) {
     return await Game.findById(game_id).populate('developer').populate('category').exec();
 }
@@ -95,6 +103,7 @@ async function updateGameById(game_id, update_data) {
 module.exports = {
     findAllGames,
     findAllGamesByDownloads,
+    findAllGamesByCreationDateDESC,
     findGameById,
     findGamesWithFilters,
     findGamesByIdArray,

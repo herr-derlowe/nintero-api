@@ -150,7 +150,11 @@ async function removeUserFollowing(self_userid, userid_to_unfollow) {
 
 async function getUserWishlist(userid) {
     return await User.findOne({ _id: userid }, 'wishlist wishlistCount').populate('wishlist');
-} 
+}
+
+async function getUserWishlistWithoutPopulate(userid) {
+    return await User.findOne({ _id: userid }, 'wishlist wishlistCount');
+}
 
 async function addUserWishlist(userid, wishlist_gameid) {
     const selfuser_update_query = { $addToSet: { wishlist: wishlist_gameid }};
@@ -163,6 +167,21 @@ async function removeUserWishlist(userid, wishlist_gameid) {
     const selfuser_update_query = { $pull: { wishlist: wishlist_gameid }};
     const wishlistedgame_update_query = { $pull: { wishlistedUsers: userid } }
     await Game.findOneAndUpdate({ _id: wishlist_gameid }, wishlistedgame_update_query);
+    return await User.findOneAndUpdate({ _id: userid }, selfuser_update_query, { new: true });
+}
+
+async function getUserLibrary(userid) {
+    return await User.findOne({ _id: userid }, 'libreria libreriaCount').populate('libreria');
+}
+
+async function getUserLibraryWithoutPopulate(userid) {
+    return await User.findOne({ _id: userid }, 'libreria libreriaCount');
+}
+
+async function addUserLibrary(userid, library_gameid) {
+    const selfuser_update_query = { $addToSet: { libreria: library_gameid }};
+    const boughtgame_update_query = { $inc: { downloads: 1 } };
+    await Game.findOneAndUpdate({ _id: library_gameid }, boughtgame_update_query);
     return await User.findOneAndUpdate({ _id: userid }, selfuser_update_query, { new: true });
 }
 
@@ -228,6 +247,10 @@ module.exports = {
     addUserFollowing,
     removeUserFollowing,
     getUserWishlist,
+    getUserWishlistWithoutPopulate,
     addUserWishlist,
-    removeUserWishlist
+    removeUserWishlist,
+    getUserLibrary,
+    getUserLibraryWithoutPopulate,
+    addUserLibrary
 }

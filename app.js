@@ -10,12 +10,15 @@ require('dotenv').config();
 const userRoutes = require('./src/routes/users');
 const userFollowingRoutes = require('./src/routes/usersfollowing');
 const userWishlistRoutes = require('./src/routes/userswishlist');
+const userLibraryRoutes = require('./src/routes/userslibrary');
+const receiptRoutes = require('./src/routes/receipts');
 const categoriesRoutes = require('./src/routes/categories');
 const validatorRoutes = require('./src/routes/validators');
 const articleRoutes = require('./src/routes/articles');
 const articleNotificationRoutes = require('./src/routes/articlenotifications');
 const gameRoutes = require('./src/routes/games');
 const gameNotificationRoutes = require('./src/routes/gamenotifications');
+const homepageRoutes = require('./src/routes/homepage');
 
 mongoose.connect(process.env.MONGODB_URI, { dbName: 'ninterodb' });
 
@@ -40,13 +43,16 @@ app.use((req, res, next) => {
 // API routes
 app.use('/api/users/', userRoutes);
 app.use('/api/following/', userFollowingRoutes);
-app.use('/api/wishlist/', userWishlistRoutes)
+app.use('/api/wishlist/', userWishlistRoutes);
+app.use('/api/library/', userLibraryRoutes);
+app.use('/api/receipts/', receiptRoutes);
 app.use('/api/categories/', categoriesRoutes);
 app.use('/api/validators/', validatorRoutes);
 app.use('/api/articles/', articleRoutes);
 app.use('/api/notifications/articles/', articleNotificationRoutes);
 app.use('/api/games/', gameRoutes);
 app.use('/api/notifications/games/', gameNotificationRoutes);
+app.use('/api/homepage/', homepageRoutes);
 
 //app.use('/api/category', (req,res,next)=>res.json({text: "prueba"}));
 
