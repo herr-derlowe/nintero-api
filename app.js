@@ -19,6 +19,7 @@ const articleNotificationRoutes = require('./src/routes/articlenotifications');
 const gameRoutes = require('./src/routes/games');
 const gameNotificationRoutes = require('./src/routes/gamenotifications');
 const homepageRoutes = require('./src/routes/homepage');
+const requestRoutes = require('./src/routes/request');
 
 mongoose.connect(process.env.MONGODB_URI, { dbName: 'ninterodb' });
 
@@ -53,6 +54,7 @@ app.use('/api/notifications/articles/', articleNotificationRoutes);
 app.use('/api/games/', gameRoutes);
 app.use('/api/notifications/games/', gameNotificationRoutes);
 app.use('/api/homepage/', homepageRoutes);
+app.use('/api/request/', requestRoutes);
 
 //app.use('/api/category', (req,res,next)=>res.json({text: "prueba"}));
 
