@@ -54,7 +54,13 @@ const userModel = mongoose.Schema({
     },
     libreria: [{
         type: mongoose.Types.ObjectId, ref: 'Game'
-    }]
+    }],
+    libreriaCount: {
+        type: Number,
+        get: function () {
+            return this.libreria.length
+        }
+    }
 }, {id: false, toJSON: { getters: true/*, virtuals: true*/}});
 
 // userModel.virtual('followingCount').get(function() {

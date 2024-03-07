@@ -7,6 +7,14 @@ async function findAllArticles(paginate_options) {
     // return await Article.find().populate('author').sort({ creationDate: -1 }).exec();
 }
 
+async function findAllArticlesByCreationDateDESC(amount) {
+    // paginate_options.populate = [{path: 'developer'}, {path: 'category'}];
+    // paginate_options.sort = {downloads: -1};
+    // paginate_options.limit = 
+    // return await Game.paginate({}, paginate_options);
+    return await Article.find().populate('author').sort({creationDate: -1}).limit(amount).exec();
+}
+
 /**
  * @description DB single article service. Expects article ObjectId and returns promise containing article document
 */
@@ -72,6 +80,7 @@ async function updateArticleById(article_id, update_data) {
 
 module.exports = {
     findAllArticles,
+    findAllArticlesByCreationDateDESC,
     findArticleById,
     findArticleByTitle,
     findArticleWithFilters,
