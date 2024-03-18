@@ -54,10 +54,17 @@ router.put('/add/:gameid', tokenAuthentication, checkTipo([0, 1, 2]), async (req
                 message: "That game does not exist"
             });
         }
+
+        const found_user_library = await userService.getUserLibraryWithoutPopulate(req.tokenData.userid);
+        if (found_user_library.libreria.includes(gameid)) {
+            return res.status(409).json({
+                message: "Cannot wishlist, game already in user library"
+            });
+        }
     } catch (e) {
         console.log(error);
         return res.status(500).json({
-            message: "Could not verify game existence",
+            message: "Could not verify game API validity or existence",
             error: error.message
         }); 
     }
