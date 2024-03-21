@@ -32,8 +32,10 @@ async function createUser(userbody) {
 /**
  * @description DB user listing service, returns promise containing array of user documents
 */
-async function findAllUsers() {
-    return await User.find().populate('following').populate('followers').populate('wishlist').populate('libreria').exec();
+async function findAllUsers(paginate_options) {
+    paginate_options.populate = [{path: 'following'}, {path: 'followers'}, {path: 'wishlist'}, {path: 'libreria'}];
+    return await User.paginate({}, paginate_options);
+    // return await User.find().populate('following').populate('followers').populate('wishlist').populate('libreria').exec();
 }
 
 async function findAllDevelopers() {

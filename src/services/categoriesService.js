@@ -4,6 +4,11 @@ async function findAllCategories() {
   return await Categories.find().exec();
 }
 
+async function findAllCategoriesPaginate(paginate_options) {
+  return await Categories.paginate({}, paginate_options);
+  //return await Categories.find().exec();
+}
+
 async function findUCategoryById(categoryid) {
   return await Categories.findById(categoryid).exec();
 }
@@ -53,6 +58,7 @@ async function deleteCategory(categoryid) {
 
 module.exports = {
   findAllCategories,
+  findAllCategoriesPaginate,
   findUCategoryById,
   findByName,
   findName,

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const mongoosePaginate = require('mongoose-paginate-v2');
 
 function getBilletera(value) {
     if (typeof value !== 'undefined') {
@@ -70,5 +71,7 @@ const userModel = mongoose.Schema({
 // userModel.virtual('followersCount').get(function() {
 //     return this.followers.length;
 // });
+
+userModel.plugin(mongoosePaginate);
 
 module.exports = mongoose.model('User', userModel);

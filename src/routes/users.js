@@ -8,7 +8,12 @@ const { tokenAuthentication, checkTipo } = require('../middleware/jwt-auth');
 
 // Main user route '/api/users/'. Currently expects JWT of user type 0
 router.get('/getall', tokenAuthentication, checkTipo([0]), (req, res, next) => {
-    userService.findAllUsers().then((documents) => {
+    const paginate_options = {
+        limit: parseInt(req.query.limit) || 10,
+        page: parseInt(req.query.page) || 1
+    };
+    
+    userService.findAllUsers(paginate_options).then((documents) => {
         return res.status(200).json(documents);
     })
     .catch(error => {
