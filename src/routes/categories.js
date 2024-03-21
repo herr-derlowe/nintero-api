@@ -11,6 +11,26 @@ router.get("/get", (req, res, next) => {
     return res.status(200).json(data);
   });
 });
+
+// Get categories with pagination
+router.get('/getpaginate', (req, res, next) => {
+  const paginate_options = {
+      limit: parseInt(req.query.limit) || 10,
+      page: parseInt(req.query.page) || 1
+  };
+  
+  categoriesService.findAllCategoriesPaginate(paginate_options).then((documents) => {
+      return res.status(200).json(documents);
+  })
+  .catch(error => {
+      console.log(error);
+      return res.status(500).json({
+          message: 'Could not get categories',
+          error: error
+      });
+  });
+});
+
 //Get Category By Id
 router.get(
   "/getid/:categoryid",
