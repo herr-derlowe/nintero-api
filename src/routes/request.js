@@ -115,13 +115,33 @@ router.delete(
       });
   }
 );
+
 //get all requests
 router.get("/get", tokenAuthentication, checkTipo([0]), (req, res, next) => {
   //res.send("testing category");
-  requestServise.findAllRequests().then((data) => {
-    return res.status(200).json(data);
-  });
+  // requestServise.findAllRequests().then((data) => {
+  //   return res.status(200).json(data);
+  // });
+
+  const paginate_options = {
+    limit: parseInt(req.query.limit) || 10,
+    page: parseInt(req.query.page) || 1,
+  };
+
+  requestServise
+    .findAllRequests(paginate_options)
+    .then((documents) => {
+      return res.status(200).json(documents);
+    })
+    .catch((error) => {
+      console.log(error);
+      return res.status(500).json({
+        message: "Could not get requests",
+        error: error,
+      });
+    });
 });
+
 //get request by id
 router.get(
   "/get/:requestid",

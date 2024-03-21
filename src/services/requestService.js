@@ -30,8 +30,10 @@ async function deletectRequest(requestId) {
   return await Request.deleteOne({ _id: requestId });
 }
 
-async function findAllRequests() {
-  return await Request.find().populate("requestUser").exec();
+async function findAllRequests(paginate_options) {
+  paginate_options.populate = [{path: 'requestUser'}];
+  return await Request.paginate({}, paginate_options);
+  //return await Request.find().populate("requestUser").exec();
 }
 
 async function findRequestsById(requestId) {
