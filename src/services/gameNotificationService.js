@@ -40,11 +40,16 @@ async function deleteGameNotificationById(gameNotification_id) {
     return await GameNotification.deleteOne({ _id: gameNotification_id });
 }
 
+async function deleteGameNotificationByGameId(game_id) {
+    return await GameNotification.deleteMany({ game: game_id });
+}
+
 module.exports = {
     findAllGameNotifications,
     findGameNotificationById,
     findGameNotificationByUserId,
     createNewGameNotification,
     updateGameNotificationById,
-    deleteGameNotificationById
+    deleteGameNotificationById,
+    deleteGameNotificationByGameId
 }

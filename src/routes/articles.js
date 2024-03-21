@@ -266,9 +266,12 @@ router.delete('/delete/:articleid', tokenAuthentication, checkTipo([0, 1]), asyn
                     message: 'Could not delete article by provided id'
                 });
             } else {
+                const deleted_notification_count = await articleNotificationService.deleteArticleNotificationByArticleId(req.params.articleid);
+                console.log("Deleted notifications: " + deleted_notification_count.deletedCount);
                 return res.status(200).json({
                     message: 'Article deleted',
-                    deletedCount: deleted_count.deletedCount
+                    deletedCount: deleted_count.deletedCount,
+                    deletedNotificationCount: deleted_notification_count.deletedCount
                 });
             }
         } else {

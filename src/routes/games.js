@@ -211,9 +211,12 @@ router.delete('/delete/:gameid', tokenAuthentication, checkTipo([0, 1]), async (
                     message: 'Could not delete game by provided id'
                 });
             } else {
+                const deleted_notification_count = await gameNotificationService.deleteGameNotificationByGameId(req.params.gameid);
+                console.log("Notifications deleted: " + deleted_notification_count.deletedCount);
                 return res.status(200).json({
                     message: 'Game deleted',
-                    deletedCount: deleted_count.deletedCount
+                    deletedCount: deleted_count.deletedCount,
+                    deletedNotificationCount: deleted_notification_count.deletedCount
                 });
             }
         } else {

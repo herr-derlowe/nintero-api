@@ -40,11 +40,16 @@ async function deleteArticleNotificationById(articleNotification_id) {
     return await ArticleNotification.deleteOne({ _id: articleNotification_id });
 }
 
+async function deleteArticleNotificationByArticleId(article_id) {
+    return await ArticleNotification.deleteMany({ article: article_id });
+}
+
 module.exports = {
     findAllArticleNotifications,
     findArticleNotificationById,
     findArticleNotificationByUserId,
     createNewArticleNotification,
     updateArticleNotificationById,
-    deleteArticleNotificationById
+    deleteArticleNotificationById,
+    deleteArticleNotificationByArticleId
 }
