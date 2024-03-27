@@ -103,6 +103,28 @@ async function findUsersByIdArray(id_array){
     return await User.find({ _id: search_query }).populate('following').populate('followers').populate('wishlist').populate('libreria').exec();
 }
 
+async function findUsersWithFilters(filter_options, paginate_options) {
+    let filter_query = {};
+    paginate_options.populate = [{path: 'following'}, {path: 'followers'}, {path: 'wishlist'}, {path: 'libreria'}];
+    //paginate_options.sort = {creationDate: -1};
+
+    paginate_options.sort = {fechaCreacion: -1};
+
+    if ('username' in filter_options) {
+        filter_query.username = { $regex: filter_options.username, $options: 'i' };
+    }
+
+    if ('blocked' in filter_options) {
+        filter_query.blocked = filter_options.blocked;
+    }
+
+    if ('tipo' in filter_options) {
+        filter_query.tipo = filter_options.tipo;
+    }
+
+    return await User.paginate(filter_query, paginate_options);
+}
+
 /**
  * @description DB user update service, expects valid user id and user fields to update. Returns new updated document
 */
@@ -240,6 +262,7 @@ module.exports = {
     createUser,
     updateUserBySelf,
     findUsersByIdArray,
+    findUsersWithFilters,
     deleteUserById,
     updateUserFunds,
     checkUserFunds,

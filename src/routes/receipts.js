@@ -5,6 +5,24 @@ const receiptService = require('../services/receiptService');
 const globalSchema = require('../verifiers/globalschemas');
 const { tokenAuthentication, checkTipo } = require('../middleware/jwt-auth');
 
+router.get('/getall', tokenAuthentication, checkTipo([0]), (req, res, next) => {
+    const paginate_options = {
+        limit: parseInt(req.query.limit) || 10,
+        page: parseInt(req.query.page) || 1
+    };
+
+    receiptService.findAllReceipts(paginate_options).then((documents) => {
+        return res.status(200).json(documents);
+    })
+    .catch(error => {
+        console.log(error);
+        return res.status(500).json({
+            message: 'Could not get receipts',
+            error: error
+        });
+    });
+});
+
 router.get('/getself', tokenAuthentication, checkTipo([0, 1, 2]), async (req, res, next) => {
     const userid = req.tokenData.userid;
     const paginate_options = {

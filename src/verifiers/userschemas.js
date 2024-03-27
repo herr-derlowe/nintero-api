@@ -98,6 +98,12 @@ let passwordUpdateSchema = yup.object({
     confirmPassword: yup.string().oneOf([yup.ref('newPassword'), null], "Passwords do not match").required()
 }).required();
 
+let filterUserSchema = yup.object({
+    blocked: yup.boolean(),
+    tipo: yup.number().integer().min(0).max(2),
+    username: yup.string()
+}).required().noUnknown(true).strict();
+
 module.exports = {
     registerSchema,
     registerUserAdminSchema,
@@ -105,5 +111,6 @@ module.exports = {
     editUserSchema,
     editUserAdminSchema,
     userBillingSchema,
-    passwordUpdateSchema
+    passwordUpdateSchema,
+    filterUserSchema
 }

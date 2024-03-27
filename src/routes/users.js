@@ -82,6 +82,45 @@ router.get('/getusername/:username', (req, res, next) => {
     });
 });
 
+router.post('/filter', tokenAuthentication, checkTipo([0]), async (req, res, next) => {
+    const paginate_options = {
+        limit: parseInt(req.query.limit) || 10,
+        page: parseInt(req.query.page) || 1
+    };
+
+    try {
+        if (req.body.tipo) {
+            req.body.tipo = parseInt(req.body.tipo);
+        }
+
+        userSchema.filterUserSchema.validateSync(req.body, {abortEarly: false});
+    } catch (e) {
+        console.log(e.errors);
+        if (e.errors !== undefined) {
+            return res.status(422).json({
+                error: e.errors
+            });
+        }
+    }
+
+    userService.findUsersWithFilters(req.body, paginate_options).then((document) => {
+        if (document.docs.length !== 0) {
+            return res.status(200).json(document);
+        } else {
+            return res.status(404).json({
+                message: "Couldn't find any users with those filters"
+            });
+        }
+    })
+    .catch(error => {
+        console.log(error);
+        return res.status(500).json({
+            message: 'Could not get any users',
+            error: error
+        });
+    });
+});
+
 // User register route '/api/users/register'. Expects main user data. See body for details
 router.post('/register', async (req, res, next) => {
     const user = {
