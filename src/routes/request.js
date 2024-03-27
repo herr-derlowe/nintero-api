@@ -28,7 +28,7 @@ router.post(
           message: "New request created",
         });
       } else {
-        return res.status(422).json({
+        return res.status(500).json({
           message: "Could not create the request",
         });
       }
