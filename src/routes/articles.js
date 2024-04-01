@@ -79,17 +79,14 @@ router.post('/search/:query/filter', (req, res, next) => {
 
     try {
         const filters_body = {
+            title: req.params.query,
             lte: new Date(req.body.lte),
             gte: new Date(req.body.gte),
             author: req.body.author
         }
         //console.log(req.body);
         console.log(req.params.query);
-        if (filters_body.author) {
-            articleSchema.filterArticleSchemaWithAuthor.validateSync(filters_body, {abortEarly: false});
-        } else {
-            articleSchema.filterArticleSchema.validateSync(filters_body, {abortEarly: false});
-        }
+        articleSchema.filterArticleSchema.validateSync(filters_body, {abortEarly: false});
     } catch (e) {
         console.log(e.errors);
         if (e.errors !== undefined) {
@@ -102,8 +99,9 @@ router.post('/search/:query/filter', (req, res, next) => {
             });
         }
     }
-
-    articleService.findArticleWithFilters(req.body, paginate_options, req.params.query).then((document) => {
+    req.body.title = req.params.query;
+    
+    articleService.findArticleWithFilters(req.body, paginate_options).then((document) => {
         if (document.length !== 0) {
             return res.status(200).json(document);
         } else {
@@ -121,7 +119,7 @@ router.post('/search/:query/filter', (req, res, next) => {
     });
 });
 
-router.post('/filter', (req, res, next) => {
+router.post('/filter', async (req, res, next) => {
     const paginate_options = {
         limit: parseInt(req.query.limit) || 10,
         page: parseInt(req.query.page) || 1
@@ -129,22 +127,18 @@ router.post('/filter', (req, res, next) => {
 
     try {
         //console.log(req.body);
-        if (req.body.author) {
-            let validating_body = {
-                author: req.body.author
-            };
-            if (req.body.gte && req.body.lte) {
-                validating_body.gte = new Date(req.body.gte),
-                validating_body.lte = new Date(req.body.lte)
-            }
+        if (req.body.gte && req.body.lte) {
+            req.body.gte = new Date(req.body.gte),
+            req.body.lte = new Date(req.body.lte)
+        }
 
-            articleSchema.filterArticleSchemaWithAuthor.validateSync(validating_body, {abortEarly: false});
-        } else {
-            articleSchema.filterArticleSchema.validateSync({
-                lte: new Date(req.body.lte),
-                gte: new Date(req.body.gte)
+        if ('author' in req.body) {
+            globalSchema.handleObjectIdSchema.validateSync({
+                entity_id: req.body.author
             }, {abortEarly: false});
         }
+
+        articleSchema.filterArticleSchema.validateSync(req.body, {abortEarly: false});
     } catch (e) {
         console.log(e.errors);
         if (e.errors !== undefined) {
@@ -156,6 +150,25 @@ router.post('/filter', (req, res, next) => {
                 error: e.message
             });
         }
+    }
+
+    try {
+        if ('author' in req.body) {
+            const found_user = await userService.findUserById(req.body.author);
+            if (found_user) {
+                console.log(found_user);
+            } else {
+                return res.status(404).json({
+                    message: "That author does not exist"
+                });
+            }
+        }
+    } catch (e) {
+        console.log(error);
+        return res.status(500).json({
+            message: "Could not verify author",
+            error: error.message
+        }); 
     }
 
     articleService.findArticleWithFilters(req.body, paginate_options).then((document) => {

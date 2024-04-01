@@ -30,13 +30,13 @@ async function findArticleByTitle(article_title_query, paginate_options) {
     //return await Article.find(query).populate('author').sort({ creationDate: -1 }).exec();
 }
 
-async function findArticleWithFilters(article_filter_obj, paginate_options, article_title_query) {
+async function findArticleWithFilters(article_filter_obj, paginate_options) {
     let filter_query = {};
     paginate_options.populate = 'author';
     paginate_options.sort = {creationDate: -1};
 
-    if (article_title_query) {
-        filter_query.title = { $regex: article_title_query, $options: 'i' };
+    if (article_filter_obj.title) {
+        filter_query.title = { $regex: article_filter_obj.title, $options: 'i' };
     }
 
     if (article_filter_obj.author) {
