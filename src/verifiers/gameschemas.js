@@ -93,7 +93,8 @@ let filterGameSchema = yup.object({
     developer: yup.string(),
     downloads: yup.string().uppercase().matches(SORT_MODE_REGEX, 
         'Downloads sort mode must be either ASCD for ascending order or DESC for descending'),
-    price: yup.number().min(0)
+    price: yup.number().min(0),
+    blocked: yup.boolean()
 }).required().noUnknown(true).strict();
 
 module.exports = {
