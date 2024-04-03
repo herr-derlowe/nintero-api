@@ -8,21 +8,17 @@ let registerArticleSchema = yup.object({
     content: yup.string().required()
 });
 
-let filterArticleSchema = yup.object({
-    lte: yup.date(),
-    gte: yup.date()
-});
+// let filterArticleSchema = yup.object({
+//     title: yup.string(),
+//     lte: yup.date(),
+//     gte: yup.date()
+// });
 
-let filterArticleSchemaWithAuthor = yup.object({
+let filterArticleSchema = yup.object({
+    title: yup.string(),
     lte: yup.date(),
     gte: yup.date(),
-    author: yup.string().test({
-        name: "valid-mongodb-id-authorid",
-        message: "Invalid author ObjectId",
-        test: (value) => {
-          return mongoose.Types.ObjectId.isValid(value);
-        }
-    })
+    author: yup.string()
 }).required().noUnknown(true).strict();
 
 let udpateArticleSchema = yup.object({
@@ -43,7 +39,6 @@ let updateArticleAdminSchema = yup.object({
 module.exports = {
     registerArticleSchema,
     filterArticleSchema,
-    filterArticleSchemaWithAuthor,
     udpateArticleSchema,
     updateArticleAdminSchema
 }
