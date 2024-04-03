@@ -60,6 +60,9 @@ async function findGamesWithFilters(filter_options, paginate_options) {
     if ('price' in filter_options) {
         filter_query.price = { $lte: filter_options.price }
     }
+    if ('blocked' in filter_options) {
+        filter_query.blocked = filter_options.blocked;
+    }
 
     return await Game.paginate(filter_query, paginate_options);
 }
